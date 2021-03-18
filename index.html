@@ -18,18 +18,31 @@
             display: block;
         }
 
+        #card {
+            background: no-repeat center;
+            background-size: 100% 100%;
+            height: 100%;
+            width: 100%;
+            transition: all 1000ms;
+        }
+
+        .opacity {
+            opacity: 0;
+        }
+
         @media (max-width: 500px) {
             body {
                 background: no-repeat center url("images/phone/draw.png");
                 background-size: 100% 100%;
-                transition: all 300ms;
             }
         }
     </style>
 </head>
 
 <body>
-    <canvas id="canvas" width="100" height="100" disable-scroll="true"></canvas>
+    <div id="card">
+        <canvas id="canvas" width="100" height="100" disable-scroll="true"></canvas>
+    </div>
 
     <script>
         const cards = ["libai", "qiuying", "libai", "qiuying", "libai", "qiuying", "libai", "qiuying", "libai",
@@ -38,8 +51,13 @@
         document.addEventListener('ontouchstart', function (event) {
             event.preventDefault()
         })
+        document.body.addEventListener('touchmove', function (e) {
+            e.preventDefault(); //阻止默认的处理方式(阻止下拉滑动的效果)
+        }, {
+            passive: false
+        }); //passive 参数不能省略，用来兼容ios和android
         const canvas = document.getElementById("canvas");
-        const body = document.querySelector('body')
+        const card = document.querySelector('#card')
         canvas.width = document.documentElement.clientWidth;
         canvas.height = document.documentElement.clientHeight;
 
@@ -68,11 +86,15 @@
 
         const ontouchend = (e) => {
             painting = false
+            card.classList.add("opacity")
             canvas.ontouchstart = null;
             canvas.ontouchmove = null;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            const url = '/images/phone/' + cards[Math.floor(Math.random() * 10)] + '.jpg'
-            body.style.backgroundImage = "url(" + url + ")"
+            setTimeout(() => {
+                const url = '/images/phone/' + cards[Math.floor(Math.random() * 10)] + '.jpg'
+                card.style.backgroundImage = "url(" + url + ")"
+                card.classList.remove("opacity")
+            }, 500)
             canvas.ontouchend = null;
         }
 
@@ -107,7 +129,7 @@
             if (painting) {
                 return;
             }
-            body.style.backgroundImage = "url('images/phone/draw.png')"
+            card.style.backgroundImage = ""
             canvas.ontouchstart = ontouchstart;
             canvas.ontouchmove = ontouchmove;
             canvas.ontouchend = ontouchend;
