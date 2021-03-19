@@ -50,17 +50,17 @@
     </div>
 
     <script>
-        const cards = ["libai", "qiuying", "libai", "qiuying", "libai", "qiuying", "libai", "qiuying", "libai",
-            "qiuying"
+        const cards = ["libai", "qiuying", "baiyutang", "chengniyan", "dahefuzi", "dongfuren", "dufu", "fengmenglong",
+            "jiandao", "juansan", "liniang", "lishishi", "mawencai", "nieyinniang", "ningguadao", "panzhan",
+            "qiuying", "shenwanqian", "tangxianzu", "tiancheng", "tuanshan", "xiaoman", "xuesusu", "zheshan",
+            "zhupa"
         ]
         const computerCards = ["changyuchun", "dahefuzi", "dongfuren", "dufu", "fengmenglong", "liangshanbo", "liniang",
             "lushen", "malidou", "mapengyin", "muguiying", "nieyinniang", "panan", "qinliangyu", "qinnangui",
             "shenwanqian", "shexiang", "tangxianzu", "wangruyi", "xiaoman", "xuesusu", "xuxiake", "xuxuan",
             "yaoguangxiao", "zhanzhao", "zhenghe", "zhongkui", "zhuyuanzhang", "zuosi"
         ]
-        // document.addEventListener('ontouchstart', function (event) {
-        //     event.preventDefault()
-        // })
+
         document.body.addEventListener('touchmove', function (e) {
             e.preventDefault(); //阻止默认的处理方式(阻止下拉滑动的效果)
         }, {
@@ -93,7 +93,7 @@
                 card.classList.remove("opacity")
                 setTimeout(() => {
                     cardVisible = false;
-                }, 1500)
+                }, 1000)
             }, 500)
         }
 
@@ -121,7 +121,7 @@
 
             canvas.ontouchend = (e) => {
                 painting = false;
-                moved && showCard('/images/phone/' + cards[Math.floor(Math.random() * 10)] + '.jpg')
+                moved && showCard('/images/phone/' + cards[Math.floor(Math.random() * 24)] + '.png')
             };
         } else {
             canvas.onmousedown = (e) => {
