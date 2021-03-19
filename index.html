@@ -58,14 +58,15 @@
             "shenwanqian", "shexiang", "tangxianzu", "wangruyi", "xiaoman", "xuesusu", "xuxiake", "xuxuan",
             "yaoguangxiao", "zhanzhao", "zhenghe", "zhongkui", "zhuyuanzhang", "zuosi"
         ]
-        document.addEventListener('ontouchstart', function (event) {
-            event.preventDefault()
-        })
+        // document.addEventListener('ontouchstart', function (event) {
+        //     event.preventDefault()
+        // })
         document.body.addEventListener('touchmove', function (e) {
             e.preventDefault(); //阻止默认的处理方式(阻止下拉滑动的效果)
         }, {
             passive: false
         }); //passive 参数不能省略，用来兼容ios和android
+
         const canvas = document.getElementById("canvas");
         const card = document.querySelector('#card')
         canvas.width = document.documentElement.clientWidth;
@@ -78,104 +79,74 @@
         ctx.lineCap = "round";
 
         let last, painting = false,
-            moved = false;
+            moved = false,
+            cardVisible = false;
         const isTouchDevice = "ontouchstart" in document.documentElement;
 
-        // 触摸事件
-        const ontouchstart = (e) => {
-            painting = true;
-            let x = e.touches[0].clientX;
-            let y = e.touches[0].clientY;
-            last = [x, y];
-        }
-
-        const ontouchmove = (e) => {
-            let x = e.touches[0].clientX;
-            let y = e.touches[0].clientY;
-            drawLine(last[0], last[1], x, y);
-            last = [x, y];
-        }
-
-        const ontouchend = (e) => {
-            painting = false
+        const showCard = (url) => {
+            moved = false;
+            cardVisible = true;
             card.classList.add("opacity")
-            canvas.ontouchstart = null;
-            canvas.ontouchmove = null;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             setTimeout(() => {
-                const url = '/images/phone/' + cards[Math.floor(Math.random() * 10)] + '.jpg'
                 card.style.backgroundImage = "url(" + url + ")"
                 card.classList.remove("opacity")
                 setTimeout(() => {
-                    canvas.onclick = onclick;
-                }, 1000)
+                    cardVisible = false;
+                }, 1500)
             }, 500)
-            canvas.ontouchend = null;
-        }
-
-        // 鼠标事件
-        const onmousedown = (e) => {
-            painting = true;
-            last = [e.clientX, e.clientY];
-        }
-
-        const onmousemove = (e) => {
-            if (painting) {
-                moved = true
-                drawLine(last[0], last[1], e.clientX, e.clientY);
-                last = [e.clientX, e.clientY];
-            }
-        }
-
-        const onmouseup = (e) => {
-            e.stopPropagation();
-            painting = false;
-            if (moved) {
-                card.classList.add("opacity")
-                canvas.onmousedown = null
-                canvas.onmousemove = null
-                canvas.onmouseup = null
-                moved = false
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                setTimeout(() => {
-                    const url = '/images/computer/' + computerCards[Math.floor(Math.random() * 29)] + '.png'
-                    card.style.backgroundImage = "url(" + url + ")"
-                    card.classList.remove("opacity")
-                    setTimeout(() => {
-                        canvas.onclick = onclick;
-                    }, 1000)
-                }, 500)
-
-            }
-        }
-
-        const onclick = () => {
-            if (painting) {
-                return;
-            }
-            card.style.backgroundImage = ""
-            if (isTouchDevice) {
-                canvas.ontouchstart = ontouchstart;
-                canvas.ontouchmove = ontouchmove;
-                canvas.ontouchend = ontouchend;
-            } else {
-                setTimeout(() => {
-                    canvas.onmousedown = onmousedown
-                    canvas.onmousemove = onmousemove
-                    canvas.onmouseup = onmouseup
-                }, 1000)
-            }
         }
 
         if (isTouchDevice) {
-            canvas.ontouchstart = ontouchstart;
-            canvas.ontouchmove = ontouchmove;
-            canvas.ontouchend = ontouchend;
+            canvas.ontouchstart = (e) => {
+                if (cardVisible) {
+                    return;
+                }
+                painting = true;
+                card.style.backgroundImage = ""
+                let x = e.touches[0].clientX;
+                let y = e.touches[0].clientY;
+                last = [x, y];
+            };
+
+            canvas.ontouchmove = (e) => {
+                if (painting) {
+                    moved = true
+                    let x = e.touches[0].clientX;
+                    let y = e.touches[0].clientY;
+                    drawLine(last[0], last[1], x, y);
+                    last = [x, y];
+                }
+            };
+
+            canvas.ontouchend = (e) => {
+                painting = false;
+                moved && showCard('/images/phone/' + cards[Math.floor(Math.random() * 10)] + '.jpg')
+            };
         } else {
-            canvas.onmousedown = onmousedown
-            canvas.onmousemove = onmousemove
-            canvas.onmouseup = onmouseup
+            canvas.onmousedown = (e) => {
+                if (cardVisible) {
+                    return;
+                }
+                painting = true;
+                card.style.backgroundImage = ""
+                last = [e.clientX, e.clientY];
+            }
+
+            canvas.onmousemove = (e) => {
+                if (painting) {
+                    moved = true
+                    drawLine(last[0], last[1], e.clientX, e.clientY);
+                    last = [e.clientX, e.clientY];
+                }
+            }
+
+            canvas.onmouseup = (e) => {
+                painting = false;
+                moved && showCard('/images/computer/' + computerCards[Math.floor(Math.random() * 29)] + '.png')
+            }
         }
+
 
         function drawLine(x1, y1, x2, y2) {
             ctx.beginPath();
