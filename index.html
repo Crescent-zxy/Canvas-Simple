@@ -14,6 +14,11 @@
             box-sizing: border-box;
         }
 
+        body {
+            background: no-repeat center url("images/computer/draw.png");
+            background-size: 100% 100%;
+        }
+
         #canvas {
             display: block;
         }
@@ -48,6 +53,11 @@
         const cards = ["libai", "qiuying", "libai", "qiuying", "libai", "qiuying", "libai", "qiuying", "libai",
             "qiuying"
         ]
+        const computerCards = ["changyuchun", "dahefuzi", "dongfuren", "dufu", "fengmenglong", "liangshanbo", "liniang",
+            "lushen", "malidou", "mapengyin", "muguiying", "nieyinniang", "panan", "qinliangyu", "qinnangui",
+            "shenwanqian", "shexiang", "tangxianzu", "wangruyi", "xiaoman", "xuesusu", "xuxiake", "xuxuan",
+            "yaoguangxiao", "zhanzhao", "zhenghe", "zhongkui", "zhuyuanzhang", "zuosi"
+        ]
         document.addEventListener('ontouchstart', function (event) {
             event.preventDefault()
         })
@@ -67,9 +77,11 @@
         ctx.lineWidth = 6;
         ctx.lineCap = "round";
 
-        let last, painting = false;
+        let last, painting = false,
+            moved = false;
         const isTouchDevice = "ontouchstart" in document.documentElement;
 
+        // 触摸事件
         const ontouchstart = (e) => {
             painting = true;
             let x = e.touches[0].clientX;
@@ -94,8 +106,65 @@
                 const url = '/images/phone/' + cards[Math.floor(Math.random() * 10)] + '.jpg'
                 card.style.backgroundImage = "url(" + url + ")"
                 card.classList.remove("opacity")
+                setTimeout(() => {
+                    canvas.onclick = onclick;
+                }, 1000)
             }, 500)
             canvas.ontouchend = null;
+        }
+
+        // 鼠标事件
+        const onmousedown = (e) => {
+            painting = true;
+            last = [e.clientX, e.clientY];
+        }
+
+        const onmousemove = (e) => {
+            if (painting) {
+                moved = true
+                drawLine(last[0], last[1], e.clientX, e.clientY);
+                last = [e.clientX, e.clientY];
+            }
+        }
+
+        const onmouseup = (e) => {
+            e.stopPropagation();
+            painting = false;
+            if (moved) {
+                card.classList.add("opacity")
+                canvas.onmousedown = null
+                canvas.onmousemove = null
+                canvas.onmouseup = null
+                moved = false
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                setTimeout(() => {
+                    const url = '/images/computer/' + computerCards[Math.floor(Math.random() * 29)] + '.png'
+                    card.style.backgroundImage = "url(" + url + ")"
+                    card.classList.remove("opacity")
+                    setTimeout(() => {
+                        canvas.onclick = onclick;
+                    }, 1000)
+                }, 500)
+
+            }
+        }
+
+        const onclick = () => {
+            if (painting) {
+                return;
+            }
+            card.style.backgroundImage = ""
+            if (isTouchDevice) {
+                canvas.ontouchstart = ontouchstart;
+                canvas.ontouchmove = ontouchmove;
+                canvas.ontouchend = ontouchend;
+            } else {
+                setTimeout(() => {
+                    canvas.onmousedown = onmousedown
+                    canvas.onmousemove = onmousemove
+                    canvas.onmouseup = onmouseup
+                }, 1000)
+            }
         }
 
         if (isTouchDevice) {
@@ -103,19 +172,9 @@
             canvas.ontouchmove = ontouchmove;
             canvas.ontouchend = ontouchend;
         } else {
-            canvas.onmousedown = (e) => {
-                painting = true;
-                last = [e.clientX, e.clientY];
-            }
-            canvas.onmousemove = (e) => {
-                if (painting) {
-                    drawLine(last[0], last[1], e.clientX, e.clientY);
-                    last = [e.clientX, e.clientY];
-                }
-            }
-            canvas.onmouseup = (e) => {
-                painting = false;
-            }
+            canvas.onmousedown = onmousedown
+            canvas.onmousemove = onmousemove
+            canvas.onmouseup = onmouseup
         }
 
         function drawLine(x1, y1, x2, y2) {
@@ -123,16 +182,6 @@
             ctx.moveTo(x1, y1);
             ctx.lineTo(x2, y2);
             ctx.stroke();
-        }
-
-        canvas.onclick = () => {
-            if (painting) {
-                return;
-            }
-            card.style.backgroundImage = ""
-            canvas.ontouchstart = ontouchstart;
-            canvas.ontouchmove = ontouchmove;
-            canvas.ontouchend = ontouchend;
         }
     </script>
 </body>
